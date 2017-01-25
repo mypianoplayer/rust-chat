@@ -4,5 +4,6 @@ version = "0.2.1"
 authors = ["Nikita Baksalyar <nikita.baksalyar@gmail.com>"]
 
 [dependencies]
-mio-websocket = { git = "https://github.com/nbaksalyar/mio-websocket" }
+#mio-websocket = { git = "https://github.com/mypianoplayer/mio-websocket" }
+mio-websocket = { path = "../mio-websocket" }
 env_logger = "0.3"
