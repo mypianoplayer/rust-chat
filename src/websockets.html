@@ -15,11 +15,17 @@
 				received.appendChild(text);
 			};
 			socket.onmessage = function (event) {
-				var received = document.getElementById("received");
-				var br = document.createElement("BR");
-				var text = document.createTextNode(event.data);
-				received.appendChild(br);
-				received.appendChild(text);
+				var log = document.getElementById("log");
+				var message = event.data;
+				log.value = message + "\n" + log.value;
+
+				eval( messag );
+
+				//var received = document.getElementById("received");
+				//var br = document.createElement("BR");
+				//var text = document.createTextNode(event.data);
+				//received.appendChild(br);
+				//received.appendChild(text);
 			};
 
 			socket.onerror = function (event) {
@@ -70,12 +76,29 @@
 				received.appendChild(text);
 			};
 
+			function newobject(name, text) {
+				var screen = document.getElementById("screen");
+				var obj = document.createTextNode(text);
+				obj.id = name;
+				obj.onclick = function(event) {
+					send("clicked," + obj.id);
+				};
+				screen.appendChild(obj);
+			}
+
+			function docommand(script) {
+
+			}
+
 			function send(element) {
 				var input = document.getElementById(element);
 				socket.send(input.value);
 				input.value = "";
 			}
 		</script>
+			<div>★AIMING GAME PORTAL★</div>
+			<div id="screen"></div>
+			<textarea id="log" cols="100" rows="20"></textarea>
 			<p id="received">
 				<strong>Received Messages:</strong>
 			</p>
