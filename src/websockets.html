@@ -6,7 +6,8 @@
 	</head>
 	<body>
 		<script>
-			var socket = new WebSocket("ws://127.0.0.1:10000");
+			var socket = new WebSocket("ws://192.168.32.185:10000");
+//			var socket = new WebSocket("ws://rust-mypianoplayer.c9users.io")
 			socket.onopen = function (event) {
 				var received = document.getElementById("received");
 				var br = document.createElement("BR");
