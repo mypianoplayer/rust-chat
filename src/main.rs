@@ -19,13 +19,13 @@ fn main() {
 }
 
 
-struct Game1<'a> {
-    system : entity_component::System<'a>,
+struct Game1 {
+    system :entity_component::System,
     server : WebSocket
 
 }
 
-impl<'a> Game1<'a> {
+impl Game1 {
 
     fn new(host_addr: &str) -> Game1 {
         Game1 {
@@ -36,6 +36,9 @@ impl<'a> Game1<'a> {
 
     fn onmessage(&mut self, msg: &String) {
         println!("{}", msg);
+        if msg.eq("start") {
+
+        }
     }
 
     fn update(&mut self) {
@@ -54,7 +57,7 @@ impl<'a> Game1<'a> {
                             println!("connected peer: {:?}", tok);
                         },
 
-                        (tok, WebSocketEvent::TextMessage(msg)) => {
+                        (_, WebSocketEvent::TextMessage(msg)) => {
                             self.onmessage(&msg);
                         },
 
