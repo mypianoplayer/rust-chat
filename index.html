@@ -26,9 +26,9 @@
 					var message = event.data;
 					log.value = message + "\n" + log.value;
 
-					if( message != "tick" ) {
-						eval( message );
-					}
+					// if( message != "tick" ) {
+					// 	eval( message );
+					// }
 
 					//var received = document.getElementById("received");
 					//var br = document.createElement("BR");
@@ -110,10 +110,10 @@
 				input.value = "";
 			}
 		</script>
-			<div>★AIMING GAME PORTAL★</div>
+			<div>★PORTAL★</div>
 			<button onclick="startgame('ws://192.168.32.185:10000')">game1</button>
 			<button onclick="startgame('ws://192.168.32.185:10001')">game2</button>
-			<div id="screen"></div>
+			<canvas id="screen" width="900" heidht="1600"></canvas>
 			<textarea id="log" cols="100" rows="20"></textarea>
 			<p id="received">
 				<strong>Received Messages:</strong>
