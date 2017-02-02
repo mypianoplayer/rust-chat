@@ -6,10 +6,20 @@
 	</head>
 	<body>
 		<script>
-
 			var socket;
 
 			function startgame(addr) {
+
+				document.getElementById('screen').addEventListener( "click", function( e ) {
+					// マウス位置を取得する
+					var rect = e.target.getBoundingClientRect();
+					x = e.clientX - rect.left;
+					y = e.clientY - rect.top;
+
+					socket.send("click " + x + " " + y);
+				}) ;
+
+
 				socket = new WebSocket(addr);
 	//			var socket = new WebSocket("ws://rust-mypianoplayer.c9users.io")
 				socket.onopen = function (event) {
@@ -26,9 +36,11 @@
 					var message = event.data;
 					log.value = message + "\n" + log.value;
 
-					// if( message != "tick" ) {
-					// 	eval( message );
-					// }
+					var splitted = message.split(' ');
+
+					if( splitted.length > 1 && splitted[0] == "script" ) {
+						eval( splitted[1] );
+					}
 
 					//var received = document.getElementById("received");
 					//var br = document.createElement("BR");
@@ -96,8 +108,13 @@
 				screen.appendChild(obj);
 			}
 
-			function docommand(script) {
-
+			function draw_circle(x,y,r) {
+				var canvas = document.getElementById('screen');
+			    if ( ! canvas || ! canvas.getContext ) { return; }
+			    var ctx = canvas.getContext('2d');
+			    ctx.beginPath();
+			    ctx.arc(x, y, r, 0, Math.PI*2, false);
+			    ctx.stroke();
 			}
 
 			function send(msg) {
@@ -109,6 +126,8 @@
 				socket.send(input.value);
 				input.value = "";
 			}
+
+
 		</script>
 			<div>★PORTAL★</div>
 			<button onclick="startgame('ws://192.168.32.185:10000')">game1</button>
