@@ -8,13 +8,7 @@ use std::sync::{Arc,Weak,mpsc};
 use std::cell::RefCell;
 use std::{thread, time};
 use mio_websocket::interface::*;
-use rust_chat::entity_component;
-
-enum ComponentTypeId {
-    Input,
-    Position,
-    ObjectView,
-}
+use rust_chat::entity_component::*;
 
 fn main() {
     env_logger::init().unwrap();
@@ -25,81 +19,9 @@ fn main() {
 
 }
 
-struct InputComponent {
-    clicked_pos: (f32,f32)
-}
-
-impl InputComponent {
-    fn set_clicked_pos(&mut self,pos:(f32,f32)) {
-        self.clicked_pos = pos;
-    }
-    fn clicked_pos(&self) -> (f32,f32) {
-        self.clicked_pos
-    }
-}
-
-impl entity_component::Component for InputComponent {
-    fn update(&mut self, parent:&entity_component::Entity) {
-
-    }
-    fn typeid(&self) -> i32 {
-        ComponentTypeId::Input as i32
-    }
-}
-
-struct PositionComponent {
-    pos: (f32,f32),
-    input: Weak<RefCell<InputComponent>>
-}
-
-impl PositionComponent {
-    fn pos(&self) -> (f32,f32) {
-        self.pos
-    }
-}
-
-impl entity_component::Component for PositionComponent {
-    fn update(&mut self, parent:&entity_component::Entity) {
-        if let Some(input) = self.input.upgrade() {
-            let tgtpos = input.borrow().clicked_pos();
-            self.pos.0 = self.pos.0 + (tgtpos.0 - self.pos.0) * 0.05;
-            self.pos.1 = self.pos.1 + (tgtpos.1 - self.pos.1) * 0.05;
-        }
-    }
-    fn typeid(&self) -> i32 {
-        ComponentTypeId::Position as i32
-    }
-}
-
-struct ObjectViewComponent {
-    server: Weak<RefCell<WebSocket>>,
-    pos: Weak<RefCell<PositionComponent>>
-}
-
-impl ObjectViewComponent {
-    fn new(sv: Weak<RefCell<WebSocket>>) -> ObjectViewComponent {
-        ObjectViewComponent {
-            server:sv,
-            pos:Weak::new(),
-        }
-    }
-}
-
-impl entity_component::Component for ObjectViewComponent {
-    fn update(&mut self, parent:&entity_component::Entity) {
-        if let Some(sv) = self.server.upgrade() {
-            // let pos = parent.component(ComponentTypeId::Position as i32);
-            // let p = pos.borrow().pos();
-            sv.borrow_mut().send_all("script draw_circle(10,10,50)".to_string());
-        }
-    }
-    fn typeid(&self) -> i32 {
-        ComponentTypeId::ObjectView as i32
-    }
-}
 
 struct Game1 {
-    system : Arc<RefCell<entity_component::System>>,
+    system : Arc<RefCell<System>>,
     server : Arc<RefCell<WebSocket>>
 }
 
@@ -107,7 +29,7 @@ impl Game1 {
 
     fn new(host_addr: &str) -> Game1 {
         Game1 {
-            system : Arc::new(RefCell::new(entity_component::System::new())),
+            system : Arc::new(RefCell::new(System::new())),
             server : Arc::new(RefCell::new(WebSocket::new(host_addr.parse::<SocketAddr>().unwrap()))),
         }
     }
@@ -115,9 +37,19 @@ impl Game1 {
     fn onmessage(&self, msg: &String) {
         println!("{}", msg);
         if msg.eq("start") {
-            let mut obj = entity_component::Entity::new();
-            let cmp = ObjectViewComponent::new(Arc::downgrade(&self.server));
-            obj.add_component(Arc::new(RefCell::new(cmp)));
+            let mut obj = Entity::new();
+            {
+                let cmp = InputComponent::new();
+                obj.add_component(Component::Input(cmp));
+            }
+            {
+                let cmp = PositionComponent::new();
+                obj.add_component(Component::Position(cmp));
+            }
+            {
+                let cmp = ObjectViewComponent::new(Arc::downgrade(&self.server));
+                obj.add_component(Component::ObjectView(cmp));
+            }
             self.system.borrow_mut().add_entity(obj);
         }
     }
