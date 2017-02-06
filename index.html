@@ -20,7 +20,12 @@
 					socket.send("click " + x + " " + y);
 				}) ;
 
+				clear_screen();
 
+				if(socket) {
+					send("end");
+					socket.close();
+				}
 				socket = new WebSocket(addr);
 	//			var socket = new WebSocket("ws://rust-mypianoplayer.c9users.io")
 				socket.onopen = function (event) {
@@ -125,6 +130,11 @@
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 			}
 
+			function show_text(txt) {
+				var elm = document.getElementById("text");
+				elm.value = log.value + "\n" + txt;
+			}
+
 			function send(msg) {
 				socket.send(msg);
 			}
@@ -140,7 +150,14 @@
 			<div>★PORTAL★</div>
 			<button onclick="startgame('ws://192.168.32.185:10000')">game1</button>
 			<button onclick="startgame('ws://192.168.32.185:10001')">game2</button><br/>
-			<canvas id="screen" width="900" height="1600" style="{background-color:yellow;border:solid 1px black;}"></canvas>
+			<canvas id="screen" width="900" height="300"></canvas>
+			<textarea disabled id="text" cols="100" rows="10" style="background-color:transparent;"></textarea>
+			<div id="control"></div>
+			<br/>
+			<br/>
+			<br/>
+			<br/>
+			<br/>
 			<textarea id="log" cols="100" rows="20"></textarea>
 			<p id="received">
 				<strong>Received Messages:</strong>

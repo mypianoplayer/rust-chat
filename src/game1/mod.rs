@@ -43,6 +43,19 @@ impl Game {
             }
             self.system.borrow_mut().add_entity(obj);
         }
+        if msg.eq("end") {
+            let mut remove_id = 0;
+            for e in self.system.borrow().entities() {
+                let ent = e.borrow();
+                let inp = ent.component(1);
+                if let Component::Input(ref input) = *inp {
+                   if input.token().eq(&tok) {
+                       remove_id = ent.id();
+                   }
+                }
+            }
+            self.system.borrow_mut().disable_entity(remove_id);
+        }
         if msg.starts_with("click") {
             let mut it = msg.split_whitespace();
             it.next();
@@ -104,7 +117,7 @@ impl Game {
                     match e {
                         mpsc::TryRecvError::Empty => {
                             thread::sleep( time::Duration::from_millis(33) );
-                            self.server.borrow_mut().send_all("script clear_screen()".to_string());
+                            // self.server.borrow_mut().send_all("script clear_screen()".to_string());
                             self.system.borrow_mut().update();
                         },
                         mpsc::TryRecvError::Disconnected => {

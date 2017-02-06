@@ -117,20 +117,31 @@ impl ObjectViewComponent {
 
 
 pub struct Entity {
-    pub comps : HashMap<i32,RefCell<Component>>
+    pub comps : HashMap<i32,RefCell<Component>>,
+    id : i32,
+    enable : bool,
 }
 
 impl Entity {
     pub fn new() -> Entity {
         Entity {
-            comps: HashMap::new()
+            comps: HashMap::new(),
+            id:0,
+            enable: true,
         }
+    }
+    pub fn set_entity_id(&mut self,id:i32) {
+        self.id = id;
+    }
+    pub fn id(&self) -> i32 {
+        self.id
     }
     pub fn add_component(&mut self, comp:Component ) {
         let id = comp.type_id();
         self.comps.insert(id, RefCell::new(comp));
     }
     pub fn update_entity(&mut self, component_type_id:i32) {
+        if self.enable == false { return; }
         if let Some(comp) = self.comps.get(&component_type_id) {
             comp.borrow_mut().update(&self);
         }
@@ -138,18 +149,22 @@ impl Entity {
     pub fn component(&self, type_id:i32) -> Ref<Component> {
         self.comps.get(&type_id).unwrap().borrow()
     }
-    pub fn component_mut(&self, type_id:i32) -> RefMut<Component> {
+    pub fn component_mut(&mut self, type_id:i32) -> RefMut<Component> {
         self.comps.get(&type_id).unwrap().borrow_mut()
     }
     pub fn components(&self) -> &HashMap<i32,RefCell<Component>> {
         &self.comps
+    }
+    pub fn disable(&mut self) {
+        self.enable = false;
     }
 }
 
 pub struct System {
     // comps : Vec<Weak<RefCell<Component>>>,
     objects : Vec<Arc<RefCell<Entity>>>,
-    component_type_ids : BTreeSet<i32>
+    component_type_ids : BTreeSet<i32>,
+    entity_id_max : i32,
 }
 
 impl System {
@@ -158,19 +173,30 @@ impl System {
             // comps : Vec::new(),
             objects: Vec::new(),
             component_type_ids: BTreeSet::new(),
+            entity_id_max:0,
         }
     }
-    pub fn add_entity(&mut self, entity:Entity) {
+    pub fn add_entity(&mut self, mut entity:Entity) {
         for (id,_) in entity.components() {
             self.component_type_ids.insert(*id);
         }
+        entity.set_entity_id(self.entity_id_max);
         self.objects.push(Arc::new(RefCell::new(entity)));
+        self.entity_id_max += 1;
     }
     pub fn entities(&self) -> &Vec<Arc<RefCell<Entity>>> {
         &self.objects
     }
     pub fn entities_mut(&mut self) -> &mut Vec<Arc<RefCell<Entity>>> {
         &mut self.objects
+    }
+    pub fn disable_entity(&mut self, entity_id:i32) {
+        for e in &mut self.objects {
+            let mut ent = e.borrow_mut();
+            if ent.id() == entity_id {
+                ent.disable();
+            }
+        }
     }
     pub fn update(&mut self) {
         for id in &self.component_type_ids {
