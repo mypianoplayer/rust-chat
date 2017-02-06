@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 		<meta charset="utf-8">
-		<title>WebSocket Test</title>
+		<title>Portal</title>
 	</head>
 	<body>
 		<script>
@@ -115,6 +116,13 @@
 			    ctx.beginPath();
 			    ctx.arc(x, y, r, 0, Math.PI*2, false);
 			    ctx.stroke();
+			}
+
+			function clear_screen() {
+				var canvas = document.getElementById('screen');
+			    if ( ! canvas || ! canvas.getContext ) { return; }
+			    var ctx = canvas.getContext('2d');
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
 			}
 
 			function send(msg) {

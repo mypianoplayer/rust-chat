@@ -104,6 +104,7 @@ impl Game {
                     match e {
                         mpsc::TryRecvError::Empty => {
                             thread::sleep( time::Duration::from_millis(33) );
+                            self.server.borrow_mut().send_all("script clear_screen()".to_string());
                             self.system.borrow_mut().update();
                         },
                         mpsc::TryRecvError::Disconnected => {
