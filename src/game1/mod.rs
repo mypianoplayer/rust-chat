@@ -1,5 +1,6 @@
 extern crate mio_websocket;
 extern crate env_logger;
+extern crate mio;
 
 mod entity_component;
 
@@ -12,7 +13,7 @@ use self::entity_component::*;
 
 pub struct Game {
     system : Arc<RefCell<System>>,
-    server : Arc<RefCell<WebSocket>>
+    server : Arc<RefCell<WebSocket>>,
 }
 
 impl Game {
@@ -24,12 +25,12 @@ impl Game {
         }
     }
 
-    fn onmessage(&self, msg: &String) {
+    fn onmessage(&self, tok:mio::Token, msg: &String) {
         println!("{}", msg);
         if msg.eq("start") {
             let mut obj = Entity::new();
             {
-                let cmp = InputComponent::new();
+                let cmp = InputComponent::new(tok);
                 obj.add_component(Component::Input(cmp));
             }
             {
@@ -41,6 +42,23 @@ impl Game {
                 obj.add_component(Component::ObjectView(cmp));
             }
             self.system.borrow_mut().add_entity(obj);
+        }
+        if msg.starts_with("click") {
+            let mut it = msg.split_whitespace();
+            it.next();
+            let x :f32 = it.next().unwrap().parse().unwrap();
+            let y :f32 = it.next().unwrap().parse().unwrap();
+            for e in self.system.borrow_mut().entities_mut() {
+                let mut ent = e.borrow_mut();
+                let mut inp = ent.component_mut(1);
+                if let Component::Input(ref mut input) = *inp {
+                   if input.token().eq(&tok) {
+                        input.set_clicked_pos((x,y));
+                   }
+                }
+
+            }
+
         }
     }
 
@@ -69,8 +87,8 @@ impl Game {
                             println!("connected peer: {:?}", tok);
                         },
 
-                        (_, WebSocketEvent::TextMessage(msg)) => {
-                            self.onmessage(&msg);
+                        (tok, WebSocketEvent::TextMessage(msg)) => {
+                            self.onmessage(tok, &msg);
                         },
 
                         (tok, WebSocketEvent::BinaryMessage(msg)) => {

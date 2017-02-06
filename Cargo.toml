@@ -7,3 +7,4 @@ authors = ["Nikita Baksalyar <nikita.baksalyar@gmail.com>"]
 #mio-websocket = { git = "https://github.com/mypianoplayer/mio-websocket" }
 mio-websocket = { path = "../mio-websocket" }
 env_logger = "0.3"
+mio = "0.5.0"

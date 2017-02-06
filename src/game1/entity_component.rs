@@ -1,4 +1,5 @@
 extern crate mio_websocket;
+extern crate mio;
 
 use std::cell::*;
 use std::sync::{Arc,Weak};
@@ -43,18 +44,25 @@ impl Component {
 }
 
 pub struct InputComponent {
-    clicked_pos: (f32,f32)
+    token: mio::Token,
+    clicked_pos: (f32,f32),
 }
 
 impl InputComponent {
-    pub fn new() -> InputComponent {
-        InputComponent{ clicked_pos:(0.0,0.0) }
+    pub fn new(tok: mio::Token) -> InputComponent {
+        InputComponent{
+            token: tok,
+            clicked_pos:(0.0,0.0),
+        }
     }
     pub fn set_clicked_pos(&mut self,pos:(f32,f32)) {
         self.clicked_pos = pos;
     }
     pub fn clicked_pos(&self) -> (f32,f32) {
         self.clicked_pos
+    }
+    pub fn token(&self) -> &mio::Token {
+        &self.token
     }
 
     pub fn update(&mut self, parent:&Entity) {
@@ -126,6 +134,9 @@ impl Entity {
     pub fn component(&self, type_id:i32) -> Ref<Component> {
         self.comps.get(&type_id).unwrap().borrow()
     }
+    pub fn component_mut(&self, type_id:i32) -> RefMut<Component> {
+        self.comps.get(&type_id).unwrap().borrow_mut()
+    }
     pub fn components(&self) -> &HashMap<i32,RefCell<Component>> {
         &self.comps
     }
@@ -150,6 +161,12 @@ impl System {
             self.component_type_ids.insert(*id);
         }
         self.objects.push(Arc::new(RefCell::new(entity)));
+    }
+    pub fn entities(&self) -> &Vec<Arc<RefCell<Entity>>> {
+        &self.objects
+    }
+    pub fn entities_mut(&mut self) -> &mut Vec<Arc<RefCell<Entity>>> {
+        &mut self.objects
     }
     pub fn update(&mut self) {
         for id in &self.component_type_ids {
