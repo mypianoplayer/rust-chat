@@ -66,7 +66,7 @@ impl InputComponent {
     }
 
     pub fn update(&mut self, parent:&Entity) {
-        println!("input!!")
+        // println!("input!!")
     }
 }
 
@@ -82,7 +82,7 @@ impl PositionComponent {
         self.pos
     }
     pub fn update(&mut self, parent:&Entity) {
-        println!("position!!");
+        // println!("position!!");
         if let Component::Input(ref input) = *parent.component(1) {
             let tgtpos = input.clicked_pos();
             self.pos.0 = self.pos.0 + (tgtpos.0 - self.pos.0) * 0.05;
@@ -102,11 +102,15 @@ impl ObjectViewComponent {
         }
     }
     pub fn update(&mut self, parent:&Entity) {
-        println!("objectview!!");
+        // println!("objectview!!");
         if let Some(sv) = self.server.upgrade() {
             // let pos = parent.component(ComponentTypeId::Position as i32);
             // let p = pos.borrow().pos();
-            sv.borrow_mut().send_all("script draw_circle(10,10,50)".to_string());
+            if let Component::Position(ref pos) = *parent.component(2) {
+                let position = pos.pos();
+                let cmd = format!("script draw_circle({},{},4)", position.0, position.1);
+                sv.borrow_mut().send_all(cmd);
+            }
         }
     }
 }

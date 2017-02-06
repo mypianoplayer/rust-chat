@@ -103,7 +103,7 @@ impl Game {
                 Err(e) => {
                     match e {
                         mpsc::TryRecvError::Empty => {
-                            thread::sleep( time::Duration::from_millis(1000) );
+                            thread::sleep( time::Duration::from_millis(33) );
                             self.system.borrow_mut().update();
                         },
                         mpsc::TryRecvError::Disconnected => {
