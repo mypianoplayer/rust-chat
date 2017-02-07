@@ -85,6 +85,9 @@ impl PositionComponent {
         // println!("position!!");
         if let Component::Input(ref input) = *parent.component(1) {
             let tgtpos = input.clicked_pos();
+            if (tgtpos.0 - self.pos.0).abs() < 5.0 && (tgtpos.1 - self.pos.1).abs() < 5.0 {
+                return;
+            }
             self.pos.0 = self.pos.0 + (tgtpos.0 - self.pos.0) * 0.05;
             self.pos.1 = self.pos.1 + (tgtpos.1 - self.pos.1) * 0.05;
         }
@@ -108,7 +111,7 @@ impl ObjectViewComponent {
             // let p = pos.borrow().pos();
             if let Component::Position(ref pos) = *parent.component(2) {
                 let position = pos.pos();
-                let cmd = format!("script draw_circle({},{},4)", position.0, position.1);
+                let cmd = format!("script draw_circle({},{},10)", position.0, position.1);
                 sv.borrow_mut().send_all(cmd);
             }
         }

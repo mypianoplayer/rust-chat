@@ -18,7 +18,17 @@
 					y = e.clientY - rect.top;
 
 					socket.send("click " + x + " " + y);
-				}) ;
+				});
+
+				document.getElementById('button1').addEventListener( "click", function( e ) {
+					socket.send("button1");
+				});
+				document.getElementById('button2').addEventListener( "click", function( e ) {
+					socket.send("button2");
+				});
+				document.getElementById('button3').addEventListener( "click", function( e ) {
+					socket.send("button3");
+				});
 
 				clear_screen();
 
@@ -135,6 +145,18 @@
 				elm.value = log.value + "\n" + txt;
 			}
 
+			function setup_button(idx, show, text) {
+				var elm = document.getElementById("button" + idx);
+				if( elm ) {
+					elm.innerHTML = text;
+					if( show ) {
+						elm.style.display="inline";
+					} else {
+						elm.style.display="none";
+					}
+				}
+			}
+
 			function send(msg) {
 				socket.send(msg);
 			}
@@ -150,7 +172,10 @@
 			<div>★PORTAL★</div>
 			<button onclick="startgame('ws://192.168.32.185:10000')">game1</button>
 			<button onclick="startgame('ws://192.168.32.185:10001')">game2</button><br/>
-			<canvas id="screen" width="900" height="300"></canvas>
+			<canvas id="screen" width="400" height="300"></canvas><br/>
+			<button id="button1" style="display:none"></button>
+			<button id="button2" style="display:none"></button>
+			<button id="button3" style="display:none"></button><br/>
 			<textarea disabled id="text" cols="100" rows="10" style="background-color:transparent;"></textarea>
 			<div id="control"></div>
 			<br/>

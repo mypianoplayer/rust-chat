@@ -1,5 +1,6 @@
 extern crate mio_websocket;
 extern crate env_logger;
+extern crate mio;
 
 mod entity_component;
 
@@ -12,7 +13,7 @@ use self::entity_component::*;
 
 pub struct Game {
     system : Arc<RefCell<System>>,
-    server : Arc<RefCell<WebSocket>>
+    server : Arc<RefCell<WebSocket>>,
 }
 
 impl Game {
@@ -24,12 +25,12 @@ impl Game {
         }
     }
 
-    fn onmessage(&self, msg: &String) {
+    fn onmessage(&self, tok:mio::Token, msg: &String) {
         println!("{}", msg);
         if msg.eq("start") {
             let mut obj = Entity::new();
             {
-                let cmp = InputComponent::new();
+                let cmp = InputComponent::new(tok);
                 obj.add_component(Component::Input(cmp));
             }
             {
@@ -41,6 +42,39 @@ impl Game {
                 obj.add_component(Component::ObjectView(cmp));
             }
             self.system.borrow_mut().add_entity(obj);
+            self.server.borrow_mut().send_all("script setup_button(1,true,'A')".to_string());
+            self.server.borrow_mut().send_all("script setup_button(2,true,'B')".to_string());
+            self.server.borrow_mut().send_all("script setup_button(3,true,'C')".to_string());
+        }
+        if msg.eq("end") {
+            let mut remove_id = 0;
+            for e in self.system.borrow().entities() {
+                let ent = e.borrow();
+                let inp = ent.component(1);
+                if let Component::Input(ref input) = *inp {
+                   if input.token().eq(&tok) {
+                       remove_id = ent.id();
+                   }
+                }
+            }
+            self.system.borrow_mut().disable_entity(remove_id);
+        }
+        if msg.starts_with("click") {
+            let mut it = msg.split_whitespace();
+            it.next();
+            let x :f32 = it.next().unwrap().parse().unwrap();
+            let y :f32 = it.next().unwrap().parse().unwrap();
+            for e in self.system.borrow_mut().entities_mut() {
+                let mut ent = e.borrow_mut();
+                let mut inp = ent.component_mut(1);
+                if let Component::Input(ref mut input) = *inp {
+                   if input.token().eq(&tok) {
+                        input.set_clicked_pos((x,y));
+                   }
+                }
+
+            }
+
         }
     }
 
@@ -69,8 +103,8 @@ impl Game {
                             println!("connected peer: {:?}", tok);
                         },
 
-                        (_, WebSocketEvent::TextMessage(msg)) => {
-                            self.onmessage(&msg);
+                        (tok, WebSocketEvent::TextMessage(msg)) => {
+                            self.onmessage(tok, &msg);
                         },
 
                         (tok, WebSocketEvent::BinaryMessage(msg)) => {
@@ -85,7 +119,8 @@ impl Game {
                 Err(e) => {
                     match e {
                         mpsc::TryRecvError::Empty => {
-                            thread::sleep( time::Duration::from_millis(1000) );
+                            thread::sleep( time::Duration::from_millis(33) );
+                            // self.server.borrow_mut().send_all("script clear_screen()".to_string());
                             self.system.borrow_mut().update();
                         },
                         mpsc::TryRecvError::Disconnected => {
