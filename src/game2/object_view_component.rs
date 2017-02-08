@@ -31,23 +31,22 @@ impl ObjectViewComponent {
                 let tok = peer.0;
                 if !self.tokens.contains(&tok) {
                     self.tokens.insert(tok);
-                    let cmd = format!("script new_object('{}','{}')", self.name, "init");
+                    let cmd = format!("script new_object('{}','{}')", self.name, "PLAYER");
                     s.send_peer(tok, cmd);
+
+                    if let Component::Position(ref pos) = *parent.component(2) {
+                        let position = pos.pos();
+                        let cmd = format!("script object_set_pos('{}',{},{});", self.name, position.0, position.1 );
+                        s.send_all(cmd);
+                    }
+                    // if let Component::BattleStatus(ref bat) = *parent.component(3) {
+                    //     let hp = bat.hp();
+                    //     let cmd = format!("script object_command('{}', 'innerHTML=\"{}\"')", self.name, hp);
+                    //     s.send_all(cmd);
+                    // }
                 }
             }
 
-            if let Component::Position(ref pos) = *parent.component(2) {
-                let position = pos.pos();
-                let cmd = format!("script object_command('{}','style.position.left={}px')", self.name, position.0 );
-                s.send_all(cmd);
-                let cmd = format!("script object_command('{}','style.position.top={}px')", self.name, position.1 );
-                s.send_all(cmd);
-            }
-            if let Component::BattleStatus(ref bat) = *parent.component(3) {
-                let hp = bat.hp();
-                let cmd = format!("script object_command('{}', 'innerHTML=\"{}\"')", self.name, hp);
-                s.send_all(cmd);
-            }
         }
     }
     pub fn new_object(&self, tok: usize) {

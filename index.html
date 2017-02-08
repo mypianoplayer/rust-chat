@@ -115,19 +115,30 @@
 			}
 
 			function new_object(name, text) {
-				var screen = document.getElementById('screen');
-				var obj = document.createTextNode(text);
+//				var objBody = document.getElementsByTagName("body").item(0);
+				var ui = document.getElementById('ui');
+				var obj = document.createElement('div');
+				obj.innerHTML = text;
 				obj.id = name;
 				obj.onclick = function(event) {
 					send("object_clicked " + obj.id);
 				};
-				screen.appendChild(obj);
+				ui.appendChild(obj);
+			}
+
+			function object_set_pos(name, x, y) {
+				var obj = document.getElementById(name);
+				if( obj ) {
+					obj.style.position="absolute";
+					obj.style.left=x;
+					obj.style.top=y;
+				}
 			}
 
 			function object_command(name, command) {
 				var obj = document.getElementById(name);
 				if( obj ) {
-					var cmd = "obj." + command;
+					var cmd = "document.getElementById('" + name + "')." + command + ";";
 					eval(cmd);
 				}
 			}
@@ -181,6 +192,7 @@
 			<button onclick="startgame('ws://192.168.32.185:10000')">game1</button>
 			<button onclick="startgame('ws://192.168.32.185:10001')">game2</button><br/>
 			<canvas id="screen" width="400" height="300"></canvas><br/>
+			<div id="ui"></div>
 			<button id="button1" style="display:none"></button>
 			<button id="button2" style="display:none"></button>
 			<button id="button3" style="display:none"></button><br/>
