@@ -3,6 +3,9 @@ extern crate env_logger;
 extern crate mio;
 
 mod entity_component;
+mod battle_status_component;
+mod object_view_component;
+mod position_component;
 
 use std::net::SocketAddr;
 use std::sync::{Arc,Weak,mpsc};
@@ -10,6 +13,10 @@ use std::cell::RefCell;
 use std::{thread, time};
 use self::mio_websocket::interface::*;
 use self::entity_component::*;
+
+use self::battle_status_component::*;
+use self::position_component::*;
+use self::object_view_component::*;
 
 pub struct Game {
     system : Arc<RefCell<System>>,
@@ -30,50 +37,51 @@ impl Game {
         if msg.eq("start") {
             let mut obj = Entity::new();
             {
-                let cmp = InputComponent::new(tok);
-                obj.add_component(Component::Input(cmp));
-            }
-            {
-                let cmp = PositionComponent::new();
+                let mut cmp = PositionComponent::new();
+                cmp.set_pos((10.0,10.0));
                 obj.add_component(Component::Position(cmp));
             }
             {
-                let cmp = ObjectViewComponent::new(Arc::downgrade(&self.server));
+                let cmp = BattleStatusComponent::new();
+                obj.add_component(Component::BattleStatus(cmp));
+            }
+            {
+                let cmp = ObjectViewComponent::new(Arc::downgrade(&self.server), "P1".to_string());
                 obj.add_component(Component::ObjectView(cmp));
             }
             self.system.borrow_mut().add_entity(obj);
-            self.server.borrow_mut().send_all("script setup_button(1,true,'A')".to_string());
-            self.server.borrow_mut().send_all("script setup_button(2,true,'B')".to_string());
-            self.server.borrow_mut().send_all("script setup_button(3,true,'C')".to_string());
+            self.server.borrow_mut().send_all("script setup_button(1,true,'攻撃')".to_string());
+            self.server.borrow_mut().send_all("script setup_button(2,false,'')".to_string());
+            self.server.borrow_mut().send_all("script setup_button(3,false,'')".to_string());
         }
         if msg.eq("end") {
-            let mut remove_id = 0;
-            for e in self.system.borrow().entities() {
-                let ent = e.borrow();
-                let inp = ent.component(1);
-                if let Component::Input(ref input) = *inp {
-                   if input.token().eq(&tok) {
-                       remove_id = ent.id();
-                   }
-                }
-            }
-            self.system.borrow_mut().disable_entity(remove_id);
+            // let mut remove_id = 0;
+            // for e in self.system.borrow().entities() {
+            //     let ent = e.borrow();
+            //     let inp = ent.component(1);
+            //     if let Component::Input(ref input) = *inp {
+            //        if input.token().eq(&tok) {
+            //            remove_id = ent.id();
+            //        }
+            //     }
+            // }
+            // self.system.borrow_mut().disable_entity(remove_id);
         }
         if msg.starts_with("click") {
-            let mut it = msg.split_whitespace();
-            it.next();
-            let x :f32 = it.next().unwrap().parse().unwrap();
-            let y :f32 = it.next().unwrap().parse().unwrap();
-            for e in self.system.borrow_mut().entities_mut() {
-                let mut ent = e.borrow_mut();
-                let mut inp = ent.component_mut(1);
-                if let Component::Input(ref mut input) = *inp {
-                   if input.token().eq(&tok) {
-                        input.set_clicked_pos((x,y));
-                   }
-                }
-
-            }
+            // let mut it = msg.split_whitespace();
+            // it.next();
+            // let x :f32 = it.next().unwrap().parse().unwrap();
+            // let y :f32 = it.next().unwrap().parse().unwrap();
+            // for e in self.system.borrow_mut().entities_mut() {
+            //     let mut ent = e.borrow_mut();
+            //     let mut inp = ent.component_mut(1);
+            //     if let Component::Input(ref mut input) = *inp {
+            //        if input.token().eq(&tok) {
+            //             input.set_clicked_pos((x,y));
+            //        }
+            //     }
+            //
+            // }
 
         }
     }

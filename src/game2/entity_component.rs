@@ -6,11 +6,14 @@ use std::sync::{Arc,Weak};
 use std::collections::hash_map::HashMap;
 use std::collections::btree_set::BTreeSet;
 use self::mio_websocket::interface::*;
-
+use game2::battle_status_component::BattleStatusComponent;
+use game2::object_view_component::ObjectViewComponent;
+use game2::position_component::PositionComponent;
 
 pub enum Component {
     Input(InputComponent),
     Position(PositionComponent),
+    BattleStatus(BattleStatusComponent),
     ObjectView(ObjectViewComponent),
 }
 
@@ -23,6 +26,9 @@ impl Component {
             Component::Position(ref mut v) => {
                 v.update(parent);
             },
+            Component::BattleStatus(ref mut v) => {
+                v.update(parent);
+            }
             Component::ObjectView(ref mut v) => {
                 v.update(parent);
             }
@@ -36,8 +42,11 @@ impl Component {
             Component::Position(_) => {
                 2
             },
-            Component::ObjectView(_) => {
+            Component::BattleStatus(_) => {
                 3
+            }
+            Component::ObjectView(_) => {
+                4
             }
         }
     }
@@ -67,51 +76,6 @@ impl InputComponent {
 
     pub fn update(&mut self, parent:&Entity) {
         // println!("input!!")
-    }
-}
-
-pub struct PositionComponent {
-    pos: (f32,f32),
-}
-
-impl PositionComponent {
-    pub fn new() -> PositionComponent {
-        PositionComponent{ pos:(0.0,0.0) }
-    }
-    pub fn pos(&self) -> (f32,f32) {
-        self.pos
-    }
-    pub fn update(&mut self, parent:&Entity) {
-        // println!("position!!");
-        if let Component::Input(ref input) = *parent.component(1) {
-            let tgtpos = input.clicked_pos();
-            self.pos.0 = self.pos.0 + (tgtpos.0 - self.pos.0) * 0.05;
-            self.pos.1 = self.pos.1 + (tgtpos.1 - self.pos.1) * 0.05;
-        }
-    }
-}
-
-pub struct ObjectViewComponent {
-    server: Weak<RefCell<WebSocket>>,
-}
-
-impl ObjectViewComponent {
-    pub fn new(sv: Weak<RefCell<WebSocket>>) -> ObjectViewComponent {
-        ObjectViewComponent {
-            server:sv,
-        }
-    }
-    pub fn update(&mut self, parent:&Entity) {
-        // println!("objectview!!");
-        if let Some(sv) = self.server.upgrade() {
-            // let pos = parent.component(ComponentTypeId::Position as i32);
-            // let p = pos.borrow().pos();
-            if let Component::Position(ref pos) = *parent.component(2) {
-                let position = pos.pos();
-                let cmd = format!("script draw_circle({},{},10)", position.0, position.1);
-                sv.borrow_mut().send_all(cmd);
-            }
-        }
     }
 }
 

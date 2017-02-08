@@ -114,14 +114,22 @@
 				};
 			}
 
-			function newobject(name, text) {
-				var screen = document.getElementById("screen");
+			function new_object(name, text) {
+				var screen = document.getElementById('screen');
 				var obj = document.createTextNode(text);
 				obj.id = name;
 				obj.onclick = function(event) {
-					send("clicked," + obj.id);
+					send("object_clicked " + obj.id);
 				};
 				screen.appendChild(obj);
+			}
+
+			function object_command(name, command) {
+				var obj = document.getElementById(name);
+				if( obj ) {
+					var cmd = "obj." + command;
+					eval(cmd);
+				}
 			}
 
 			function draw_circle(x,y,r) {
