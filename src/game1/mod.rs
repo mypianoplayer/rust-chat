@@ -42,11 +42,11 @@ impl Game {
                 obj.add_component(Component::ObjectView(cmp));
             }
             self.system.borrow_mut().add_entity(obj);
-            self.server.borrow_mut().send_all("script clear_ui()".to_string());
-            self.server.borrow_mut().send_all("script setup_screen(true)".to_string());
-            self.server.borrow_mut().send_all("script setup_button(1,false,'')".to_string());
-            self.server.borrow_mut().send_all("script setup_button(2,false,'')".to_string());
-            self.server.borrow_mut().send_all("script setup_button(3,false,'')".to_string());
+            // self.server.borrow_mut().send_all("script clear_ui()".to_string());
+            self.server.borrow_mut().send_peer(tok.as_usize(), "script setup_screen(true)".to_string());
+            self.server.borrow_mut().send_peer(tok.as_usize(), "script setup_button(1,false,'')".to_string());
+            self.server.borrow_mut().send_peer(tok.as_usize(), "script setup_button(2,false,'')".to_string());
+            self.server.borrow_mut().send_peer(tok.as_usize(), "script setup_button(3,false,'')".to_string());
         }
         if msg.eq("end") {
             let mut remove_id : Option<i32> = None;

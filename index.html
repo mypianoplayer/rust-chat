@@ -31,6 +31,12 @@
 				};
 
 				clear_screen();
+				clear_ui();
+				clear_text();
+				setup_screen(false);
+				setup_button(1, false, "");
+				setup_button(2, false, "");
+				setup_button(3, false, "");
 
 				if(socket) {
 					send("end");
@@ -48,9 +54,9 @@
 					send("start");
 				};
 				socket.onmessage = function (event) {
-					var log = document.getElementById("log");
+//					var log = document.getElementById("log");
 					var message = event.data;
-					log.value = message + "\n" + log.value;
+//					log.value = message + "\n" + log.value;
 
 					var splitted = message.split(' ');
 
@@ -167,8 +173,17 @@
 			}
 
 			function show_text(txt) {
-				var elm = document.getElementById("text");
-				elm.value = log.value + "\n" + txt;
+				var elm = document.getElementById("msgview");
+				if( elm ) {
+					elm.value = txt + "\n" + elm.value;
+				}
+			}
+
+			function clear_text() {
+				var elm = document.getElementById("msgview");
+				if( elm ) {
+					elm.value = "";
+				}
 			}
 
 			function setup_screen(show) {
@@ -216,12 +231,12 @@
 			<div>★PORTAL★</div>
 			<button onclick="startgame('ws://192.168.32.185:10000')">game1</button>
 			<button onclick="startgame('ws://192.168.32.185:10001')">game2</button><br/>
-			<canvas id="screen" width="400" height="300"></canvas><br/>
-			<div id="ui"></div>
+			<canvas id="screen" width="400" height="300" style="display:none"></canvas><br/>
 			<button id="button1" style="display:none"></button>
 			<button id="button2" style="display:none"></button>
 			<button id="button3" style="display:none"></button><br/>
-			<textarea disabled id="text" cols="100" rows="10" style="background-color:transparent;"></textarea>
+			<textarea disabled id="msgview" cols="100" rows="10"></textarea>
+			<div id="ui"></div>
 			<div id="control"></div>
 			<br/>
 			<br/>

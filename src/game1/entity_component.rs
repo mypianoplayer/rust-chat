@@ -85,23 +85,34 @@ impl PositionComponent {
         // println!("position!!");
         if let Component::Input(ref input) = *parent.component(1) {
             let tgtpos = input.clicked_pos();
-            if (tgtpos.0 - self.pos.0).abs() < 5.0 && (tgtpos.1 - self.pos.1).abs() < 5.0 {
-                return;
+            if (tgtpos.0 - self.pos.0).abs() > 5.0 {
+                let mut movex = (tgtpos.0 - self.pos.0) * 0.05;
+                // if movex.abs() <= 1.0 {
+                //     movex = movex / movex;
+                // }
+                self.pos.0 = self.pos.0 + movex;
             }
-            self.pos.0 = self.pos.0 + (tgtpos.0 - self.pos.0) * 0.05;
-            self.pos.1 = self.pos.1 + (tgtpos.1 - self.pos.1) * 0.05;
+            if (tgtpos.1 - self.pos.1).abs() > 5.0 {
+                let mut movey = (tgtpos.1 - self.pos.1) * 0.05;
+                // if movey.abs() <= 1.0 {
+                //     movey = movey / movey;
+                // }
+                self.pos.1 = self.pos.1 + movey;
+            }
         }
     }
 }
 
 pub struct ObjectViewComponent {
     server: Weak<RefCell<WebSocket>>,
+    prev_pos:(f32,f32),
 }
 
 impl ObjectViewComponent {
     pub fn new(sv: Weak<RefCell<WebSocket>>) -> ObjectViewComponent {
         ObjectViewComponent {
             server:sv,
+            prev_pos:(0.0,0.0),
         }
     }
     pub fn update(&mut self, parent:&Entity) {
@@ -111,8 +122,11 @@ impl ObjectViewComponent {
             // let p = pos.borrow().pos();
             if let Component::Position(ref pos) = *parent.component(2) {
                 let position = pos.pos();
-                let cmd = format!("script draw_circle({},{},10)", position.0, position.1);
-                sv.borrow_mut().send_all(cmd);
+                if self.prev_pos != position {
+                    self.prev_pos = position;
+                    let cmd = format!("script draw_circle({},{},10)", position.0, position.1);
+                    sv.borrow_mut().send_all(cmd);
+                }
             }
         }
     }

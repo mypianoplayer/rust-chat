@@ -20,11 +20,13 @@ impl BattleStatusComponent {
     pub fn attack_pow(&self) -> i32 {
         self.attack_pow
     }
-    pub fn attacked(&mut self, by:&BattleStatusComponent) {
-        self.hp -= by.attack_pow() + (rand::random::<u32>() % 4_u32) as i32;
-        if self.hp < 0 {
-            self.hp = 0;
-        }
+    pub fn attacked(&mut self, by:&BattleStatusComponent) -> i32 {
+        let damage = by.attack_pow() + (rand::random::<u32>() % 4_u32) as i32;
+        self.hp -= damage;
+        // if self.hp < 0 {
+        //     self.hp = 0;
+        // }
+        damage
     }
     pub fn update(&mut self, parent:&Entity ) {
 

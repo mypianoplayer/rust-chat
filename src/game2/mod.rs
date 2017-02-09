@@ -56,11 +56,11 @@ impl Game {
                 obj.add_component(Component::ObjectView(cmp));
             }
             self.system.borrow_mut().add_entity(obj);
-            self.server.borrow_mut().send_all("script clear_ui()".to_string());
-            self.server.borrow_mut().send_all("script setup_screen(false)".to_string());
-            self.server.borrow_mut().send_all("script setup_button(1,true,'攻撃')".to_string());
-            self.server.borrow_mut().send_all("script setup_button(2,false,'')".to_string());
-            self.server.borrow_mut().send_all("script setup_button(3,false,'')".to_string());
+            // self.server.borrow_mut().send_peer(tok.as_usize(), "script clear_ui()".to_string());
+            // self.server.borrow_mut().send_peer(tok.as_usize(), "script setup_screen(false)".to_string());
+            self.server.borrow_mut().send_peer(tok.as_usize(), "script setup_button(1,true,'攻撃')".to_string());
+            self.server.borrow_mut().send_peer(tok.as_usize(), "script setup_button(2,false,'')".to_string());
+            self.server.borrow_mut().send_peer(tok.as_usize(), "script setup_button(3,false,'')".to_string());
         }
         if msg.eq("button1") {
             let mut sys = self.system.borrow_mut();
@@ -85,15 +85,22 @@ impl Game {
             let mut btl_tgt = en_tgt.unwrap();
             let id_me = btl_me.borrow().id();
             let id_tgt = btl_tgt.borrow().id();
-            if id_me != id_tgt {
+            if id_me == id_tgt {
+                let text = format!("{}の攻撃!効果がなかった", id_me);
+                let cmd = format!("script show_text('{}')", text);
+                self.server.borrow_mut().send_all(cmd);
+            } else {
                 let mut btl_me = btl_me.borrow_mut();
                 let mut btl_me = btl_me.component_mut(3);
                 let mut btl_tgt = btl_tgt.borrow_mut();
                 let mut btl_tgt = btl_tgt.component_mut(3);
                 if let Component::BattleStatus(ref mut btl_me) = *btl_me {
                     if let Component::BattleStatus(ref mut btl_tgt) = *btl_tgt {
-                        btl_tgt.attacked(&btl_me);
+                        let damage = btl_tgt.attacked(&btl_me);
                         println!("attack {} -> {}", id_me, id_tgt);
+                        let text = format!("{}の攻撃!>>{}に{}のダメージ!", id_me, id_tgt, damage);
+                        let cmd = format!("script show_text('{}')", text);
+                        self.server.borrow_mut().send_all(cmd);
                     }
                 }
             }
