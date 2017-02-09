@@ -11,24 +11,24 @@
 
 			function startgame(addr) {
 
-				document.getElementById('screen').addEventListener( "click", function( e ) {
+				document.getElementById('screen').onclick = function( e ) {
 					// マウス位置を取得する
 					var rect = e.target.getBoundingClientRect();
 					x = e.clientX - rect.left;
 					y = e.clientY - rect.top;
 
 					socket.send("click " + x + " " + y);
-				});
+				};
 
-				document.getElementById('button1').addEventListener( "click", function( e ) {
+				document.getElementById('button1').onclick = function( e ) {
 					socket.send("button1");
-				});
-				document.getElementById('button2').addEventListener( "click", function( e ) {
+				};
+				document.getElementById('button2').onclick = function( e ) {
 					socket.send("button2");
-				});
-				document.getElementById('button3').addEventListener( "click", function( e ) {
+				};
+				document.getElementById('button3').onclick = function( e ) {
 					socket.send("button3");
-				});
+				};
 
 				clear_screen();
 
@@ -135,6 +135,13 @@
 				}
 			}
 
+			function object_set_text(name, text) {
+				var obj = document.getElementById(name);
+				if( obj ) {
+					obj.innerHTML = text;
+				}
+			}
+
 			function object_command(name, command) {
 				var obj = document.getElementById(name);
 				if( obj ) {
@@ -164,6 +171,17 @@
 				elm.value = log.value + "\n" + txt;
 			}
 
+			function setup_screen(show) {
+				var screen = document.getElementById('screen');
+				if( screen ) {
+					if( show ) {
+						screen.style.display="inline";
+					} else {
+						screen.style.display="none";
+					}
+				}
+			}
+
 			function setup_button(idx, show, text) {
 				var elm = document.getElementById("button" + idx);
 				if( elm ) {
@@ -173,6 +191,13 @@
 					} else {
 						elm.style.display="none";
 					}
+				}
+			}
+
+			function clear_ui() {
+				var ui = document.getElementById("ui");
+				while (ui.firstChild) {
+				    ui.removeChild(ui.firstChild);
 				}
 			}
 

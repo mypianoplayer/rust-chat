@@ -8,3 +8,4 @@ authors = ["Nikita Baksalyar <nikita.baksalyar@gmail.com>"]
 mio-websocket = { path = "../mio-websocket" }
 env_logger = "0.3"
 mio = "0.5.0"
+rand = "0.3.15"

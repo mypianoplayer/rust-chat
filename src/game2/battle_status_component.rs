@@ -1,3 +1,5 @@
+extern crate rand;
+
 use game2::entity_component::*;
 
 pub struct BattleStatusComponent {
@@ -9,7 +11,7 @@ impl BattleStatusComponent {
     pub fn new() -> BattleStatusComponent {
         BattleStatusComponent {
             hp:100,
-            attack_pow:10,
+            attack_pow:15,
         }
     }
     pub fn hp(&self) -> i32 {
@@ -19,7 +21,10 @@ impl BattleStatusComponent {
         self.attack_pow
     }
     pub fn attacked(&mut self, by:&BattleStatusComponent) {
-        self.hp -= by.attack_pow();
+        self.hp -= by.attack_pow() + (rand::random::<u32>() % 4_u32) as i32;
+        if self.hp < 0 {
+            self.hp = 0;
+        }
     }
     pub fn update(&mut self, parent:&Entity ) {
 

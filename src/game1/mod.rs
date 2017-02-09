@@ -42,22 +42,26 @@ impl Game {
                 obj.add_component(Component::ObjectView(cmp));
             }
             self.system.borrow_mut().add_entity(obj);
+            self.server.borrow_mut().send_all("script clear_ui()".to_string());
+            self.server.borrow_mut().send_all("script setup_screen(true)".to_string());
             self.server.borrow_mut().send_all("script setup_button(1,false,'')".to_string());
             self.server.borrow_mut().send_all("script setup_button(2,false,'')".to_string());
             self.server.borrow_mut().send_all("script setup_button(3,false,'')".to_string());
         }
         if msg.eq("end") {
-            let mut remove_id = 0;
+            let mut remove_id : Option<i32> = None;
             for e in self.system.borrow().entities() {
                 let ent = e.borrow();
                 let inp = ent.component(1);
                 if let Component::Input(ref input) = *inp {
                    if input.token().eq(&tok) {
-                       remove_id = ent.id();
+                       remove_id = Some(ent.id());
                    }
                 }
             }
-            self.system.borrow_mut().disable_entity(remove_id);
+            if let Some(remove_id) = remove_id {
+                self.system.borrow_mut().disable_entity(remove_id);
+            }
         }
         if msg.starts_with("click") {
             let mut it = msg.split_whitespace();

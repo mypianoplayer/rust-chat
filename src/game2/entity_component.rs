@@ -82,6 +82,7 @@ impl InputComponent {
 
 pub struct Entity {
     pub comps : HashMap<i32,RefCell<Component>>,
+    params: HashMap<String,i32>,
     id : i32,
     enable : bool,
 }
@@ -90,6 +91,7 @@ impl Entity {
     pub fn new() -> Entity {
         Entity {
             comps: HashMap::new(),
+            params: HashMap::new(),
             id:0,
             enable: true,
         }
@@ -99,6 +101,12 @@ impl Entity {
     }
     pub fn id(&self) -> i32 {
         self.id
+    }
+    pub fn param(&self, key:String) -> i32 {
+        *self.params.get(&key).unwrap()
+    }
+    pub fn set_param(&mut self, key:String, value:i32) {
+        self.params.insert(key, value);
     }
     pub fn add_component(&mut self, comp:Component ) {
         let id = comp.type_id();
